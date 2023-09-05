@@ -20,14 +20,14 @@ class CamApp(App):
 
     def build(self):
         self.web_cam = Image(size_hint=(1, .8))
-        self.button = Button(text="Verify", size_hint=(1, .1))
-        self.verification = Label(text="verification Uninitiated", size_hint=(1,.1))
+        self.button = Button(text="Verify", on_press= self.verify, size_hint=(1, .1))
+        self.verification_label = Label(text="verification Uninitiated", size_hint=(1,.1))
 
         # add items to layout 
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.web_cam)
         layout.add_widget(self.button)
-        layout.add_widget(self.verification)
+        layout.add_widget(self.verification_label)
 
         # load tf model
         self.model = tf.keras.models.load_model('siamesemodel.pkl', custom_objects={'L1Dist':L1Dist})
@@ -81,9 +81,22 @@ class CamApp(App):
             result = self.model.predict(list(np.expand_dims([input_img, validation_img], axis = 1)))
             results.append(result)
 
+        # detection threshold: metric above which a prediction is considered positive 
         detection = np.sum(np.array(results) > detection_threshold)
+
+        # verification threshold: propotion of positive predictions/ total positive samples 
         verification = detection / len(os.listdir(os.path.join('application_data', 'verification_images')))
         verified = verification > verification_threshold
+
+        # set verification text
+        self.verification_label.text = 'Verified' if verified == True else 'Unverified'
+
+        # log out details
+        Logger.info(results)
+        Logger.info(detection)
+        Logger.info(verification)
+        Logger.info(verified)
+
 
         return results, verified
     
