@@ -24,6 +24,8 @@ def beep_alarm():
             break
         print("Alarm")
         winsound.Beep(2500, 1000)
+        if not alarm_mode:  # Check again after playing each beep
+            break
     alarm = False
 
 
@@ -53,7 +55,7 @@ while True:
     if alarm_counter > 20:
         if not alarm:
             alarm = True
-            threading.Thread(target=beep_alarm).start()
+            threading.Thread(target=beep_alarm()).start()
 
     key_pressed = cv2.waitKey(30)
     if key_pressed == ord("t"):
